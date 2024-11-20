@@ -52,10 +52,6 @@
             border-radius: 4px;
             display: none;
         }
-        .info {
-            margin-top: 10px;
-            color: #666;
-        }
         #currentFile {
             margin-top: 10px;
             color: #333;
@@ -81,10 +77,8 @@
     </style>
 </head>
 <body>
-    <img src="https://www.google.com/imgres?q=is%20there%20an%20issue%20in%20html%20with%20internet%20media%20links&imgurl=https%3A%2F%2Fstatic.semrush.com%2Fblog%2Fuploads%2Fmedia%2F40%2F9f%2F409fc6d26892d00d404445eef3a8f7c6%2Fhtml-link-codes.svg&imgrefurl=https%3A%2F%2Fwww.semrush.com%2Fblog%2Fhtml-link-code%2F&docid=YAUmW4xwrIFnrM&tbnid=igs77NlNm47yJM&vet=12ahUKEwif8fzFk-qJAxVmT6QEHVLxFv8QM3oECGEQAA..i&w=368&h=298&hcb=2&ved=2ahUKEwif8fzFk-qJAxVmT6QEHVLxFv8QM3oECGEQAA" alt="Description of the image">
     <div class="container">
         <h1>Audio Fetcher</h1>
-        
         <div id="playerControls">
             <label for="textInput">Enter File Name (e.g., 1_0_cropped):</label><br><br>
             <input type="text" id="textInput" placeholder="Enter file name here">
@@ -92,7 +86,7 @@
             <div id="currentFile"></div>
             <div id="errorMessage" class="error"></div>
             <audio id="audioPlayer" controls>
-                Your browser does not support MP3 audio playback.
+                Your browser does not support FLAC audio playback.
             </audio>
             <br>
             <a id="downloadLink" style="display: none;">Download Audio File</a>
@@ -102,7 +96,7 @@
     <script>
         let audioMapping = [];
 
-        // Load JSON data when page loads
+        // Load JSON data when the page loads
         window.addEventListener('load', () => {
             fetch('scraped_files.json')
                 .then(response => response.json())
@@ -111,7 +105,7 @@
                     document.getElementById('playButton').disabled = false;
                 })
                 .catch(error => {
-                    showError('Error loading audio files data. Please ensure scraped_files.json is in the same directory and you are running through a web server.');
+                    showError('Error loading audio files data. Ensure scraped_files.json is in the same directory and accessed via a web server.');
                     document.getElementById('playButton').disabled = true;
                 });
         });
@@ -120,12 +114,12 @@
             const inputText = document.getElementById("textInput").value.trim();
             const currentFile = document.getElementById("currentFile");
             const downloadLink = document.getElementById("downloadLink");
-            
+
             // Reset UI states
             showError('');
             currentFile.style.display = 'none';
             downloadLink.style.display = 'none';
-            
+
             if (!inputText) {
                 showError("Please enter a file name.");
                 return;
@@ -148,25 +142,25 @@
             const fileId = audioFile.id;
             const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
             
-            // Update audio player (Now playing MP3 instead of FLAC)
+            // Update audio player for FLAC
             const audioPlayer = document.getElementById("audioPlayer");
             audioPlayer.src = directUrl;
-            audioPlayer.type = 'audio/mpeg';  // Set the type as MP3
+            audioPlayer.type = 'audio/flac';
 
             // Update download link
             downloadLink.href = directUrl;
             downloadLink.download = audioFile.name;
-            downloadLink.textContent = "Download MP3 file";
+            downloadLink.textContent = "Download FLAC file";
             downloadLink.style.display = 'inline-block';
 
             // Attempt to play
             audioPlayer.load();
             audioPlayer.play().catch(err => {
                 if (err.name === 'NotSupportedError') {
-                    showError("Your browser doesn't support MP3 playback. Please use the download link to listen to the file.");
+                    showError("Your browser doesn't support FLAC playback. Please use the download link to listen to the file.");
                 } else {
                     showError("Error playing audio: " + err.message + 
-                            "\nYou can try using the download link instead.");
+                              "\nYou can try using the download link instead.");
                 }
             });
         }
