@@ -103,7 +103,7 @@
 
         // Load JSON data when page loads
         window.addEventListener('load', () => {
-            fetch('modified_file.json')
+            fetch('scraped_files.json')
                 .then(response => response.json())
                 .then(data => {
                     audioMapping = data;
