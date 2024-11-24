@@ -85,9 +85,9 @@
             <button onclick="playAudio()" id="playButton">Fetch and Play Audio</button>
             <div id="currentFile"></div>
             <div id="errorMessage" class="error"></div>
-            <audio id="audioPlayer" controls>
-                Your browser does not support FLAC audio playback.
-            </audio>
+            <iframe id="audioPlayer" width="100%" height="200" frameborder="0" style="display: none;">
+                Your browser does not support audio playback.
+            </iframe>
             <br>
             <a id="downloadLink" style="display: none;">Download Audio File</a>
         </div>
@@ -95,17 +95,29 @@
 
     <script>
         let audioMapping = [];
+        let mascData = [];
 
-        // Load JSON data when the page loads
+        // Load both JSON files when the page loads
         window.addEventListener('load', () => {
+            // Load scraped_files.json
             fetch('scraped_files.json')
                 .then(response => response.json())
                 .then(data => {
                     audioMapping = data;
+                })
+                .catch(error => {
+                    showError('Error loading scraped_files.json.');
+                });
+
+            // Load MASC.json
+            fetch('MASC.json')
+                .then(response => response.json())
+                .then(data => {
+                    mascData = data;
                     document.getElementById('playButton').disabled = false;
                 })
                 .catch(error => {
-                    showError('Error loading audio files data. Ensure scraped_files.json is in the same directory and accessed via a web server.');
+                    showError('Error loading MASC.json.');
                     document.getElementById('playButton').disabled = true;
                 });
         });
@@ -114,18 +126,21 @@
             const inputText = document.getElementById("textInput").value.trim();
             const currentFile = document.getElementById("currentFile");
             const downloadLink = document.getElementById("downloadLink");
+            const audioPlayer = document.getElementById("audioPlayer");
 
             // Reset UI states
             showError('');
             currentFile.style.display = 'none';
             downloadLink.style.display = 'none';
+            audioPlayer.style.display = 'none';  // Hide the iframe initially
 
             if (!inputText) {
                 showError("Please enter a file name.");
                 return;
             }
 
-            const audioFile = audioMapping.find(file => 
+            // Search through both audioMapping and mascData for the file
+            const audioFile = [...audioMapping, ...mascData].find(file => 
                 file.name.toLowerCase().startsWith(inputText.toLowerCase())
             );
 
@@ -138,31 +153,19 @@
             currentFile.textContent = `Playing: ${audioFile.name}`;
             currentFile.style.display = 'block';
 
-            // Create direct download URL
-            const fileId = audioFile.id;
+            // Create direct download URL (for example using Google Drive file ID)
+            const fileId = audioFile.id || audioFile.fileId;  // Adjust based on your data structure
             const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-            
-            // Update audio player for FLAC
-            const audioPlayer = document.getElementById("audioPlayer");
-            audioPlayer.src = directUrl;
-            audioPlayer.type = 'audio/flac';
+
+            // Update iframe for audio
+            audioPlayer.src = `https://drive.google.com/file/d/${fileId}/preview`;
+            audioPlayer.style.display = 'block';  // Show the iframe
 
             // Update download link
             downloadLink.href = directUrl;
             downloadLink.download = audioFile.name;
             downloadLink.textContent = "Download FLAC file";
             downloadLink.style.display = 'inline-block';
-
-            // Attempt to play
-            audioPlayer.load();
-            audioPlayer.play().catch(err => {
-                if (err.name === 'NotSupportedError') {
-                    showError("Your browser doesn't support FLAC playback. Please use the download link to listen to the file.");
-                } else {
-                    showError("Error playing audio: " + err.message + 
-                              "\nYou can try using the download link instead.");
-                }
-            });
         }
 
         function showError(message) {
